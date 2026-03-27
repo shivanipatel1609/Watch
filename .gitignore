@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.angular/
+.firebase/
+coverage/
+.env
+.env.*
+backend/node_modules/
+*.log

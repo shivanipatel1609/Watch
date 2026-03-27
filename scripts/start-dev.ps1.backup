@@ -1,0 +1,27 @@
+$projectRoot = Split-Path -Parent $PSScriptRoot
+
+$backend = Start-Process -FilePath "node" `
+  -ArgumentList "backend/server.js" `
+  -WorkingDirectory $projectRoot `
+  -PassThru
+
+try {
+  Set-Location $projectRoot
+  $frontendProcess = Get-NetTCPConnection -LocalPort 4200 -ErrorAction SilentlyContinue |
+    Where-Object { $_.State -eq "Listen" } |
+    Select-Object -First 1
+
+  if ($frontendProcess) {
+    Write-Host "Frontend already running on http://localhost:4200. Backend started on http://localhost:5000."
+    Write-Host "Press Ctrl+C to stop the backend."
+    Wait-Process -Id $backend.Id
+  }
+  else {
+    npm.cmd run start:frontend -- --host localhost --port 4200
+  }
+}
+finally {
+  if ($backend -and -not $backend.HasExited) {
+    Stop-Process -Id $backend.Id -Force
+  }
+}
